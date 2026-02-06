@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decidimos o qué</title>
+
+<style>
+* { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #ff4fa1, #ff8bd8);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.app {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  border-radius: 25px;
+  padding: 25px;
+  text-align: center;
+  box-shadow: 0 15px 40px rgba(0,0,0,.25);
+}
+h1 { color: #ff2f92; margin-bottom: 5px; }
+.subtitle { font-size: .85rem; color: #888; margin-bottom: 20px; }
+.filters label { font-size: .8rem; display: block; text-align: left; margin-bottom: 5px; }
+select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  background: #ffe2f1;
+  margin-bottom: 15px;
+}
+.card-wrapper { position: relative; height: 130px; }
+.card {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #ff5ec4, #ff8bd8);
+  border-radius: 20px;
+  padding: 25px;
+  font-size: 1.2rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  animation: pop .25s ease;
+}
+@keyframes pop { from { transform: scale(.9); opacity:0; } to { transform: scale(1); opacity:1; } }
+.swipe-left { animation: left .25s ease forwards; }
+.swipe-right { animation: right .25s ease forwards; }
+@keyframes left { to { transform: translateX(-120%) rotate(-10deg); opacity:0; } }
+@keyframes right { to { transform: translateX(120%) rotate(10deg); opacity:0; } }
+
+.buttons { display: flex; justify-content: space-between; margin-top: 20px; }
+button {
+  width: 48%;
+  padding: 15px;
+  border-radius: 50px;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.nope { background: #ffd0e5; }
+.like { background: #000; color: white; }
+button:active { transform: scale(.96); }
+
+.msg { margin-top: 15px; font-size: .85rem; color: #555; min-height: 20px; }
+
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <h1>¿Qué hacemos?</h1>
+  <div class="subtitle">Desliza y decide 🖤</div>
+
+  <div class="filters">
+    <label>⏱ Tiempo</label>
+    <select id="time">
+      <option value="1h">1 hora</option>
+      <option value="2-3h">2–3 horas</option>
+      <option value="tarde">Tarde entera</option>
+    </select>
+
+    <label>💸 Presupuesto</label>
+    <select id="money">
+      <option value="0">0€</option>
+      <option value="1-15">1–15€</option>
+      <option value="+15">+15€</option>
+    </select>
+
+    <label>🔋 Energía</label>
+    <select id="energy">
+      <option value="low">Muertos</option>
+      <option value="mid">Normales</option>
+      <option value="high">Motivados</option>
+    </select>
+  </div>
+
+  <div class="card-wrapper">
+    <div class="card" id="card">Pulsa 🖤 para empezar</div>
+  </div>
+
+  <div class="buttons">
+    <button class="nope" onclick="nextPlan()">❌</button>
+    <button class="like" onclick="likePlan()">🖤</button>
+  </div>
+
+  <div class="msg" id="msg"></div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+// TODOS LOS PLANES (todos los que pusiste)
+const plans = [
+  {text:"Paseo por el Parque del Retiro + fotos", time:["2-3h","tarde"], money:["0"], energy:["mid","high"]},
+  {text:"Café y churros en San Ginés", time:["1h"], money:["1-15"], energy:["low","mid"]},
+  {text:"Cenar en 100 Montaditos", time:["2-3h","tarde"], money:["1-15"], energy:["mid","high"]},
+  {text:"Mini ruta por Malasaña + merendar", time:["1h","2-3h"], money:["0","1-15"], energy:["low","mid"]},
+  {text:"Helado en La Mallorquina y paseo por Sol", time:["1h","2-3h"], money:["1-15"], energy:["mid"]},
+  {text:"Picnic en Madrid Río", time:["2-3h","tarde"], money:["0","1-15"], energy:["low","mid"]},
+  {text:"Tapas en Mercado de San Miguel", time:["2-3h"], money:["1-15","+15"], energy:["mid","high"]},
+  {text:"Paseo por La Latina + fotos", time:["2-3h"], money:["0"], energy:["mid"]},
+  {text:"Ir a un mirador y fotos nocturnas", time:["tarde"], money:["0"], energy:["mid","high"]},
+  {text:"Visitar CaixaForum + fotos", time:["2-3h"], money:["0"], energy:["mid","high"]},
+  {text:"Ir al H2O a competir", time:["2-3h"], money:["1-15"], energy:["mid","high"]},
+  {text:"Cine en Callao", time:["2-3h"], money:["+15"], energy:["mid"]},
+  {text:"Escape room Madrid", time:["2-3h"], money:["+15"], energy:["high"]},
+  {text:"Picnic con pizzas", time:["2-3h","tarde"], money:["1-15","+15"], energy:["mid","high"]},
+  {text:"Merendar gofres en Chueca", time:["1h"], money:["1-15"], energy:["low","mid"]},
+  {text:"Nos quedamos en Vicálvaro", time:["2-3h"], money:["0"], energy:["low","mid"]},
+  {text:"Paseo por Jardines del Palacio Real", time:["1h","2-3h"], money:["0"], energy:["mid"]},
+  {text:"Fotitos en el Templo de Debod al atardecer", time:["1h","2-3h"], money:["0"], energy:["mid","high"]},
+  {text:"Ir al Plenilunio", time:["1h"], money:["1-15"], energy:["low"]},
+  {text:"Ir a un mercado vintage en Lavapiés", time:["2-3h","tarde"], money:["0","1-15"], energy:["mid","high"]},
+  {text:"Subir a una azotea en el centro", time:["tarde"], money:["1-15","+15"], energy:["mid","high"]},
+  {text:"Ruta de heladerías en Chamberí", time:["1h","2-3h"], money:["1-15"], energy:["low","mid"]},
+  {text:"Fotos por Malasaña y Chueca", time:["2-3h"], money:["0"], energy:["mid","high"]},
+  {text:"Cenar en un italiano", time:["2-3h"], money:["+15"], energy:["mid","high"]},
+  {text:"Paseo por Madrid Río al atardecer", time:["1h","2-3h"], money:["0"], energy:["low","mid"]},
+  {text:"Visitar exposiciones gratis", time:["2-3h"], money:["0"], energy:["mid"]},
+  {text:"Quedamos en la casa del otro", time:["2-3h"], money:["0"], energy:["low"]},
+  {text:"Ir al Oasiz", time:["2-3h"], money:["1-15"], energy:["high"]},
+  {text:"Paseo por el Parque de Berlín", time:["2-3h"], money:["0"], energy:["low","mid"]},
+  {text:"Helados + paseo por Plaza Mayor", time:["1h","2-3h"], money:["1-15"], energy:["mid"]},
+  {text:"Fotos en las Cuatro Torres", time:["2-3h"], money:["0"], energy:["mid","high"]},
+  {text:"Atardecer en el Faro de Moncloa", time:["2-3h","tarde"], money:["0"], energy:["mid","high"]},
+  {text:"Merendar + fotos en Sabatini", time:["2-3h"], money:["1-15"], energy:["low","mid"]},
+  {text:"Cenar en un venezolano", time:["2-3h"], money:["1-15","+15"], energy:["mid","high"]},
+  {text:"Museo Reina Sofía", time:["2-3h"], money:["+15"], energy:["mid","high"]},
+  {text:"Ir a la cachapería", time:["2-3h"], money:["1-15","+15"], energy:["mid","high"]},
+  {text:"Ruta de churros y chocolate por Sol", time:["1h"], money:["1-15"], energy:["low","mid"]},
+  {text:"Picnic en Parque del Oeste", time:["2-3h"], money:["0"], energy:["low","mid"]},
+  {text:"Ir a la bolera", time:["1h","2-3h"], money:["+15"], energy:["mid"]},
+  {text:"Fotos por Chamberí", time:["1h","2-3h"], money:["0"], energy:["mid"]},
+  {text:"Ruta gastronómica Antón Martín", time:["2-3h"], money:["1-15"], energy:["mid","high"]},
+  {text:"Ir al cine", time:["1h","2-3h"], money:["+15"], energy:["mid"]},
+  {text:"Hamburguesa gourmet en Malasaña", time:["2-3h"], money:["+15"], energy:["mid","high"]},
+  {text:"Ir a algún sitio que no conozcamos", time:["2-3h"], money:["0","1-15"], energy:["mid","high"]},
+  {text:"Ir a Casa de Campo", time:["2-3h","tarde"], money:["0","1-15"], energy:["high"]},
+  {text:"Fotos en Azotea Círculo Bellas Artes", time:["1h","2-3h"], money:["+15"], energy:["mid","high"]},
+  {text:"Cenar en el Vips", time:["1h"], money:["+15"], energy:["low","mid"]},
+  {text:"Cocinar juntos", time:["2-3h"], money:["0","1-15"], energy:["low"]},
+  {text:"Jugar al fútbol", time:["1h","2-3h"], money:["0"], energy:["mid","high"]},
+  {text:"Fotomatón", time:["2-3h"], money:["1-15"], energy:["mid"]},
+  {text:"Ir a los karts", time:["2-3h"], money:["+15"], energy:["mid","high"]},
+  {text:"Ir a la piscina", time:["2-3h"], money:["0"], energy:["mid","high"]}
+];
+
+let filtered = [];
+let index = 0;
+const card = document.getElementById("card");
+const msg = document.getElementById("msg");
+const time = document.getElementById("time");
+const money = document.getElementById("money");
+const energy = document.getElementById("energy");
+
+// Inicializar filtros al cargar
+window.onload = () => {
+  loadPlans();
+};
+
+// Cuando cambie un filtro
+time.addEventListener("change", loadPlans);
+money.addEventListener("change", loadPlans);
+energy.addEventListener("change", loadPlans);
+
+// FILTRAR Y MOSTRAR PLAN
+function loadPlans() {
+  filtered = plans.filter(p =>
+    p.time.includes(time.value) &&
+    p.money.includes(money.value) &&
+    p.energy.includes(energy.value)
+  );
+  index = 0;
+  showPlan();
+}
+
+function showPlan() {
+  if (!filtered.length) {
+    card.textContent = "No hay plan, calma";
+    return;
+  }
+  card.className = "card";
+  card.textContent = filtered[index].text;
+}
+
+// SWIPE IZQUIERDA
+const swipeMsgs = [
+  "Ya vamos, siguiente plan",
+  "No te rayes, pasamos al próximo ",
+  "Esto decide por nosotros",
+  "Calma, hay más planes"
+];
+function nextPlan() {
+  if (!filtered.length) return;
+  card.classList.add("swipe-left");
+  msg.textContent = swipeMsgs[Math.floor(Math.random()*swipeMsgs.length)];
+  setTimeout(() => { index = (index+1)%filtered.length; showPlan(); }, 250);
+}
+
+// PLAN SELLADO 🖤
+function likePlan() {
+  if (!filtered.length) {
+    msg.textContent = "No hay planes, cambia los filtros.";
+    return;
+  }
+  msg.textContent = "Ya estamos tardando en ir";
+  launchConfetti();
+}
+
+// CONFETTI
+function launchConfetti(duration = 2000) {
+  const canvas = document.getElementById("confetti");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const confettis = [];
+  for (let i=0; i<150; i++) {
+    confettis.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height- canvas.height,
+      r: Math.random()*6+4,
+      d: Math.random()*100+10,
+      color: `hsl(${Math.random()*360},100%,50%)`,
+      tilt: Math.random()*10-10
+    });
+  }
+
+  let start = null;
+  function animate(timeStamp){
+    if(!start) start = timeStamp;
+    const elapsed = timeStamp - start;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    confettis.forEach(c=>{
+      ctx.beginPath();
+      ctx.fillStyle=c.color;
+      ctx.fillRect(c.x + c.tilt, c.y, c.r, c.r);
+      ctx.closePath();
+      c.y += 2;
+      c.tilt += 0.5;
+      if(c.y>canvas.height) c.y=-10;
+    });
+    if(elapsed<duration) requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+</script>
+</body>
+</html>
