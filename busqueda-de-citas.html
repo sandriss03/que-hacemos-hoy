@@ -118,6 +118,216 @@ button:active { transform: scale(.96); }
 <canvas id="confetti"></canvas>
 
 <script>
+// TODOS LOS PLANES
+const plans = [
+  { text:"Nos quedamos en Vicálvaro", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Mini paseo por el barrio", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Sentados en un banco viendo la calle", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Mirar nubes en el parque", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Fotos tontas con el móvil", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Ir al parque Valdebernardo", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Ver una peli en casa", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Ir al McDonald's", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Comer empanadas venezolanas", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Merendar por el barrio", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Comer tortitas", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Churros con chocolate en el Bernis", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Hacer un mini picnic en el parque Valdebernardo", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Cenar en el Vips", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Comprar un postre gourmet y comerlo", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Ir a cafetería cara solo a ver", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Probar un helado premium", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Mini ruta por un mercado gourmet", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Ir a un Starbucks", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Comprar dulces", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Quedamos en la casa del otro", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Paseo corto por el parque Valdebernardo", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Ir al Carrefour de Las Rosas", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Dar una vuelta por el barrio", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Sentarse en un banco a charlar", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Visita gratuita a exposiciones", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Paseo largo por el parque Valdebernardo", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Sentarse en banco a ver atardecer", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Fotitos tranquilas por el barrio", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Dar una vuelta por el barrio", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Jugar en las canchas", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Mini picnic improvisado en césped", time:["tarde"], money:["0"], energy:["low"] },
+  // ... resto de planes tal como los tenías, asegurándote de que haya mínimo 7 por categoría
+];
+
+// Variables
+let filtered = [];
+let index = 0;
+const card = document.getElementById("card");
+const msg = document.getElementById("msg");
+const time = document.getElementById("time");
+const money = document.getElementById("money");
+const energy = document.getElementById("energy");
+
+// Inicializar filtros
+window.onload = () => loadPlans();
+time.addEventListener("change", loadPlans);
+money.addEventListener("change", loadPlans);
+energy.addEventListener("change", loadPlans);
+
+function loadPlans() {
+  filtered = plans.filter(p =>
+    p.time.includes(time.value) &&
+    p.money.includes(money.value) &&
+    p.energy.includes(energy.value)
+  );
+  index = 0;
+  showPlan();
+}
+
+function showPlan() {
+  if (!filtered.length) { card.textContent = "No hay plan, calma"; return; }
+  card.className = "card";
+  card.textContent = filtered[index].text;
+}
+
+// SWIPE
+const swipeMsgs = ["Ya vamos, siguiente plan","No te rayes, pasamos al próximo","Esto decide por nosotros","Calma, hay más planes"];
+function nextPlan() {
+  if (!filtered.length) return;
+  card.classList.add("swipe-left");
+  msg.textContent = swipeMsgs[Math.floor(Math.random()*swipeMsgs.length)];
+  setTimeout(() => { index = (index+1)%filtered.length; showPlan(); }, 250);
+}
+
+function likePlan() {
+  if (!filtered.length) { msg.textContent = "No hay planes, cambia los filtros."; return; }
+  msg.textContent = "Ya estamos tardando en ir";
+  launchConfetti();
+}
+
+// CONFETTI FLUIDO
+function launchConfetti(duration = 2000) {
+  const canvas = document.getElementById("confetti");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const confettis = [];
+  for (let i = 0; i < 150; i++) {
+    confettis.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * -canvas.height,
+      r: Math.random() * 6 + 4,
+      tilt: Math.random() * 10 - 5,
+      speed: Math.random() * 3 + 2,
+      tiltSpeed: Math.random() * 0.3 + 0.1,
+      color: `hsl(${Math.random()*360},100%,50%)`
+    });
+  }
+
+  let start = null;
+  function animate(timeStamp) {
+    if (!start) start = timeStamp;
+    const elapsed = timeStamp - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    confettis.forEach(c => {
+      ctx.fillStyle = c.color;
+      ctx.fillRect(c.x + c.tilt, c.y, c.r, c.r);
+
+      c.y += c.speed;
+      c.tilt += c.tiltSpeed;
+
+      if (c.y > canvas.height) c.y = Math.random() * -canvas.height;
+      if (c.tilt > 15 || c.tilt < -15) c.tilt = Math.random()*10-5;
+    });
+
+    if (elapsed < duration) requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+</script>
+</body>
+</html>}
+.card-wrapper { position: relative; height: 130px; }
+.card {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #ff5ec4, #ff8bd8);
+  border-radius: 20px;
+  padding: 25px;
+  font-size: 1.2rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  animation: pop .25s ease;
+}
+@keyframes pop { from { transform: scale(.9); opacity:0; } to { transform: scale(1); opacity:1; } }
+.swipe-left { animation: left .25s ease forwards; }
+.swipe-right { animation: right .25s ease forwards; }
+@keyframes left { to { transform: translateX(-120%) rotate(-10deg); opacity:0; } }
+@keyframes right { to { transform: translateX(120%) rotate(10deg); opacity:0; } }
+
+.buttons { display: flex; justify-content: space-between; margin-top: 20px; }
+button {
+  width: 48%;
+  padding: 15px;
+  border-radius: 50px;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.nope { background: #ffd0e5; }
+.like { background: #000; color: white; }
+button:active { transform: scale(.96); }
+
+.msg { margin-top: 15px; font-size: .85rem; color: #555; min-height: 20px; }
+
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <h1>¿Qué hacemos?</h1>
+  <div class="subtitle">Desliza y decide 🖤</div>
+
+  <div class="filters">
+    <label>⏱ Tiempo</label>
+    <select id="time">
+      <option value="1h">1 hora</option>
+      <option value="2-3h">2–3 horas</option>
+      <option value="tarde">Tarde entera</option>
+    </select>
+
+    <label>💸 Presupuesto</label>
+    <select id="money">
+      <option value="0">0€</option>
+      <option value="1-15">1–15€</option>
+      <option value="+15">+15€</option>
+    </select>
+
+    <label>🔋 Energía</label>
+    <select id="energy">
+      <option value="low">Muertos</option>
+      <option value="mid">Normales</option>
+      <option value="high">Motivados</option>
+    </select>
+  </div>
+
+  <div class="card-wrapper">
+    <div class="card" id="card">Pulsa 🖤 para empezar</div>
+  </div>
+
+  <div class="buttons">
+    <button class="nope" onclick="nextPlan()">❌</button>
+    <button class="like" onclick="likePlan()">🖤</button>
+  </div>
+
+  <div class="msg" id="msg"></div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
 // TODOS LOS PLANES (todos los que pusiste)
 const plans = [
 // 1°- 0€, 1h, low
