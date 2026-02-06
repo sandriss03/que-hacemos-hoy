@@ -327,23 +327,51 @@ function likePlan() {
 }
 
 // CONFETTI
-function launchConfetti(duration = 9000) {
+function launchConfetti(duration = 2000) {
   const canvas = document.getElementById("confetti");
   const ctx = canvas.getContext("2d");
+
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
   const confettis = [];
-  for (let i=0; i<150; i++) {
+  for (let i = 0; i < 150; i++) {
     confettis.push({
-      x: Math.random()*canvas.width,
-      y: Math.random()*canvas.height- canvas.height,
-      r: Math.random()*6+4,
-      d: Math.random()*100+10,
-      color: `hsl(${Math.random()*360},100%,50%)`,
-      tilt: Math.random()*10-10
+      x: Math.random() * canvas.width,
+      y: Math.random() * -canvas.height, // arrancar arriba
+      r: Math.random() * 6 + 4,
+      tilt: Math.random() * 10 - 5,
+      speed: Math.random() * 3 + 2,
+      tiltSpeed: Math.random() * 0.3 + 0.1,
+      color: `hsl(${Math.random() * 360},100%,50%)`
     });
   }
+
+  let start = null;
+  function animate(timeStamp) {
+    if (!start) start = timeStamp;
+    const elapsed = timeStamp - start;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    confettis.forEach(c => {
+      ctx.beginPath();
+      ctx.fillStyle = c.color;
+      ctx.fillRect(c.x + c.tilt, c.y, c.r, c.r);
+      ctx.closePath();
+
+      c.y += c.speed;
+      c.tilt += c.tiltSpeed;
+
+      if (c.y > canvas.height) c.y = Math.random() * -canvas.height; // vuelve arriba aleatorio
+      if (c.tilt > 15) c.tilt = Math.random() * 10 - 5; // reset tilt
+    });
+
+    if (elapsed < duration) requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+      }
 
   let start = null;
   function animate(timeStamp){
