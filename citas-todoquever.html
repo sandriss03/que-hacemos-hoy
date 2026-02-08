@@ -439,15 +439,17 @@ function nextPlan() {
 }
 
 function likePlan() {
-  if (!started) {
-    started = true;
-    loadPlans();
-    msg.textContent = "Vale, ahora sí 🖤";
+  if (!filtered.length) {
+    msg.textContent = "No hay planes, cambia los filtros.";
     return;
   }
-  if (!filtered.length) return;
   msg.textContent = "Ya estamos tardando en ir";
-  launchConfetti(3000);
+  card.classList.add("swipe-right"); // animación derecha
+  launchConfetti();
+  setTimeout(() => {
+    index = (index+1)%filtered.length; // avanzar al siguiente plan
+    showPlan();
+  }, 250);
 }
 
 // ================= CONFETI =================
