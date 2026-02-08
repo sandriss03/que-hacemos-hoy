@@ -16,13 +16,7 @@ body {
   justify-content: center;
   align-items: center;
 }
-  const password = "SandraEsLaMejor"; // Cambia esto por lo que quieras
-let userInput = prompt("Introduce la contraseña para acceder a los planes:");
-
-if(userInput !== password){
-    alert("Contraseña incorrecta. No puedes ver los planes 🐀");
-    throw new Error("Acceso denegado");
-}
+  
 .app {
   width: 100%;
   max-width: 380px;
@@ -448,6 +442,13 @@ function launchConfetti(duration = 5000) {
       tilt: Math.random()*10-10
     });
   }
+  const password = "SandraEsLaMejor"; // Cambia esto por lo que quieras
+let userInput = prompt("Introduce la contraseña para acceder a los planes:");
+
+if(userInput !== password){
+    alert("Contraseña incorrecta. No puedes ver los planes 🐀");
+    throw new Error("Acceso denegado");
+}
 
   function animate() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
