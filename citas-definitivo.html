@@ -120,14 +120,10 @@ button:active { transform: scale(.96); }
 <canvas id="confetti"></canvas>
 
 <script>
-  const password = "SandraEsLaMejor"; // Cambia esto por lo que quieras
+  const password = "SandraEsLaMejor";
 let userInput = prompt("Introduce la contraseña para acceder a los planes:");
 
-if(userInput !== password){
-    alert("Contraseña incorrecta. No puedes ver los planes 🐀");
-    throw new Error("Acceso denegado");
-}
-// TODO: TODOS LOS PLANES
+if(userInput === password){
 const plans = [
   // 1°- 0€, 1h, low
   { text:"Nos quedamos en Vicálvaro", time:["1h"], money:["0"], energy:["low"] },
@@ -367,6 +363,12 @@ const plans = [
 { text:"Tarde completa fuera", time:["tarde"], money:["+15"], energy:["high"] },
 { text:"Spa juntos", time:["tarde"], money:["0"], energy:["low"] },
 ];
+  console.log("Acceso permitido. Los planes están listos:");
+    console.log(plans);
+} else {
+    alert("Contraseña incorrecta. No puedes ver los planes🖕");
+    // No hacemos nada más si falla
+}
 
 // FILTROS Y FUNCIONES
 let filtered = [];
