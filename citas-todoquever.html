@@ -26,6 +26,7 @@ body {
 }
 h1 { color: #ff2f92; margin-bottom: 5px; }
 .subtitle { font-size: .85rem; color: #888; margin-bottom: 20px; }
+
 .filters label { font-size: .8rem; display: block; text-align: left; margin-bottom: 5px; }
 select {
   width: 100%;
@@ -35,14 +36,15 @@ select {
   background: #ffe2f1;
   margin-bottom: 15px;
 }
-.card-wrapper { position: relative; height: 130px; }
+
+.card-wrapper { position: relative; height: 140px; }
 .card {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #ff5ec4, #ff8bd8);
   border-radius: 20px;
   padding: 25px;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   color: white;
   display: flex;
   align-items: center;
@@ -50,13 +52,22 @@ select {
   text-align: center;
   animation: pop .25s ease;
 }
-@keyframes pop { from { transform: scale(.9); opacity:0; } to { transform: scale(1); opacity:1; } }
-.swipe-left { animation: left .25s ease forwards; }
-.swipe-right { animation: right .25s ease forwards; }
-@keyframes left { to { transform: translateX(-120%) rotate(-10deg); opacity:0; } }
-@keyframes right { to { transform: translateX(120%) rotate(10deg); opacity:0; } }
 
-.buttons { display: flex; justify-content: space-between; margin-top: 20px; }
+@keyframes pop {
+  from { transform: scale(.9); opacity:0; }
+  to { transform: scale(1); opacity:1; }
+}
+
+.swipe-left { animation: left .25s ease forwards; }
+@keyframes left {
+  to { transform: translateX(-120%) rotate(-10deg); opacity:0; }
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
 button {
   width: 48%;
   padding: 15px;
@@ -69,16 +80,27 @@ button {
 .like { background: #000; color: white; }
 button:active { transform: scale(.96); }
 
-.msg { margin-top: 15px; font-size: .85rem; color: #555; min-height: 20px; }
+.msg {
+  margin-top: 15px;
+  font-size: .85rem;
+  color: #555;
+  min-height: 22px;
+}
 
-#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+#confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+}
 </style>
 </head>
 
 <body>
+
 <div class="app">
   <h1>¿Qué hacemos?</h1>
-  <div class="subtitle">Desliza y decide 🖤</div>
+  <div class="subtitle">Pulsa 🖤 y deja que decida</div>
 
   <div class="filters">
     <label>⏱ Tiempo</label>
@@ -118,11 +140,21 @@ button:active { transform: scale(.96); }
 <canvas id="confetti"></canvas>
 
 <script>
-// TODOS LOS PLANES (todos los que pusiste)
+let started = false;
+let filtered = [];
+let index = 0;
+
+const card = document.getElementById("card");
+const msg = document.getElementById("msg");
+const timeSel = document.getElementById("time");
+const moneySel = document.getElementById("money");
+const energySel = document.getElementById("energy");
+
+// ================= PLANES =================
 const plans = [
 // 1°- 0€, 1h, low
 { text:"Nos quedamos en Vicálvaro", time:["1h"], money:["0"], energy:["low"] },
-{ text:"Mini paseo por el barrio", time:["1h"], money:["0"], energy:["low"] },
+{ text:"Mini paseo por el barrio", time:["1h"], wmoney:["0"], energy:["low"] },
 { text:"Sentados en un banco viendo la calle", time:["1h"], money:["0"], energy:["low"] },
 { text:"Mirar nubes en el parque", time:["1h"], money:["0"], energy:["low"] },
 { text:"Fotos tontas con el móvil", time:["1h"], money:["0"], energy:["low"] },
@@ -375,30 +407,13 @@ const plans = [
 
 ];
 
-let filtered = [];
-let index = 0;
-const card = document.getElementById("card");
-const msg = document.getElementById("msg");
-const time = document.getElementById("time");
-const money = document.getElementById("money");
-const energy = document.getElementById("energy");
 
-// Inicializar filtros al cargar
-window.onload = () => {
-  loadPlans();
-};
-
-// Cuando cambie un filtro
-time.addEventListener("change", loadPlans);
-money.addEventListener("change", loadPlans);
-energy.addEventListener("change", loadPlans);
-
-// FILTRAR Y MOSTRAR PLAN
+// ================= FUNCIONES =================
 function loadPlans() {
   filtered = plans.filter(p =>
-    p.time.includes(time.value) &&
-    p.money.includes(money.value) &&
-    p.energy.includes(energy.value)
+    p.time.includes(timeSel.value) &&
+    p.money.includes(moneySel.value) &&
+    p.energy.includes(energySel.value)
   );
   index = 0;
   showPlan();
@@ -406,74 +421,70 @@ function loadPlans() {
 
 function showPlan() {
   if (!filtered.length) {
-    card.textContent = "No hay plan, calma";
+    card.textContent = "No hay plan, cambia algo";
     return;
   }
   card.className = "card";
   card.textContent = filtered[index].text;
 }
 
-// SWIPE IZQUIERDA
-const swipeMsgs = [
-  "Ya vamos, siguiente plan",
-  "No te rayes, pasamos al próximo ",
-  "Esto decide por nosotros",
-  "Calma, hay más planes"
-];
 function nextPlan() {
-  if (!filtered.length) return;
+  if (!started || !filtered.length) return;
   card.classList.add("swipe-left");
-  msg.textContent = swipeMsgs[Math.floor(Math.random()*swipeMsgs.length)];
-  setTimeout(() => { index = (index+1)%filtered.length; showPlan(); }, 250);
+  msg.textContent = "Esto decide por nosotros";
+  setTimeout(() => {
+    index = (index + 1) % filtered.length;
+    showPlan();
+  }, 250);
 }
 
-// PLAN SELLADO 🖤
 function likePlan() {
-  if (!filtered.length) {
-    msg.textContent = "No hay planes, cambia los filtros.";
+  if (!started) {
+    started = true;
+    loadPlans();
+    msg.textContent = "Vale, ahora sí 🖤";
     return;
   }
+  if (!filtered.length) return;
   msg.textContent = "Ya estamos tardando en ir";
-  launchConfetti();
+  launchConfetti(3000);
 }
 
-// CONFETTI
-function launchConfetti(duration = 2000) {
+// ================= CONFETI =================
+function launchConfetti(duration) {
   const canvas = document.getElementById("confetti");
   const ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const confettis = [];
-  for (let i=0; i<150; i++) {
-    confettis.push({
-      x: Math.random()*canvas.width,
-      y: Math.random()*canvas.height- canvas.height,
-      r: Math.random()*6+4,
-      d: Math.random()*100+10,
-      color: `hsl(${Math.random()*360},100%,50%)`,
-      tilt: Math.random()*10-10
-    });
-  }
+  const confettis = Array.from({length:200}, () => ({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    size: Math.random()*6+4,
+    speed: Math.random()*3+2,
+    color: `hsl(${Math.random()*360},100%,50%)`
+  }));
 
-  let start = null;
-  function animate(timeStamp){
-    if(!start) start = timeStamp;
-    const elapsed = timeStamp - start;
+  let start = performance.now();
+  function animate(now) {
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    confettis.forEach(c=>{
-      ctx.beginPath();
-      ctx.fillStyle=c.color;
-      ctx.fillRect(c.x + c.tilt, c.y, c.r, c.r);
-      ctx.closePath();
-      c.y += 2;
-      c.tilt += 0.5;
-      if(c.y>canvas.height) c.y=-10;
+    confettis.forEach(c => {
+      ctx.fillStyle = c.color;
+      ctx.fillRect(c.x, c.y, c.size, c.size);
+      c.y += c.speed;
+      if (c.y > canvas.height) c.y = -10;
     });
-    if(elapsed<duration) requestAnimationFrame(animate);
+    if (now - start < duration) requestAnimationFrame(animate);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
   }
   requestAnimationFrame(animate);
 }
+
+// ================= EVENTOS =================
+timeSel.addEventListener("change", () => started && loadPlans());
+moneySel.addEventListener("change", () => started && loadPlans());
+energySel.addEventListener("change", () => started && loadPlans());
 </script>
+
 </body>
 </html>
