@@ -5,14 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Decidimos o qué</title>
 <style>
-  const password = "SandraEsLaMejor"; // Cambia esto por lo que quieras
-let userInput = prompt("Introduce la contraseña para acceder a los planes:");
-
-if(userInput !== password){
-    alert("Contraseña incorrecta. No puedes ver los planes 😎");
-    throw new Error("Acceso denegado");
-}
-
+  
 // Si pasa esto, ya puede usarse tu array de planes
 * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
 body {
@@ -22,6 +15,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+  const password = "SandraEsLaMejor"; // Cambia esto por lo que quieras
+let userInput = prompt("Introduce la contraseña para acceder a los planes:");
+
+if(userInput !== password){
+    alert("Contraseña incorrecta. No puedes ver los planes 🐀");
+    throw new Error("Acceso denegado");
 }
 .app {
   width: 100%;
