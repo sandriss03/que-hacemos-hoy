@@ -34,7 +34,7 @@ select {
   background: #ffe2f1;
   margin-bottom: 15px;
 }
-.card-wrapper { position: relative; height: 130px; margin-top: 10px; }
+.card-wrapper { position: relative; height: 130px; }
 .card {
   position: absolute;
   inset: 0;
@@ -48,7 +48,6 @@ select {
   justify-content: center;
   text-align: center;
   animation: pop .25s ease;
-  cursor: pointer;
 }
 @keyframes pop { from { transform: scale(.9); opacity:0; } to { transform: scale(1); opacity:1; } }
 .swipe-left { animation: left .25s ease forwards; }
@@ -74,6 +73,7 @@ button:active { transform: scale(.96); }
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
 </style>
 </head>
+
 <body>
 <div class="app">
   <h1>¿Qué hacemos?</h1>
@@ -103,12 +103,12 @@ button:active { transform: scale(.96); }
   </div>
 
   <div class="card-wrapper">
-    <div class="card" id="card">Pulsa 🖤 para empezar</div>
+    <div class="card" id="card"></div>
   </div>
 
   <div class="buttons">
-    <button class="nope" id="nope">❌</button>
-    <button class="like" id="like">🖤</button>
+    <button class="nope" onclick="nextPlan()">❌</button>
+    <button class="like" onclick="likePlan()">🖤</button>
   </div>
 
   <div class="msg" id="msg"></div>
@@ -117,198 +117,183 @@ button:active { transform: scale(.96); }
 <canvas id="confetti"></canvas>
 
 <script>
-// TODOS LOS PLANES
+// TODO: TODOS LOS PLANES
 const plans = [
-// 1°- 0€, 1h, low
-{ text:"Nos quedamos en Vicálvaro", time:["1h"], money:["0"], energy:["low"] },
-{ text:"Mini paseo por el barrio", time:["1h"], wmoney:["0"], energy:["low"] },
-{ text:"Sentados en un banco viendo la calle", time:["1h"], money:["0"], energy:["low"] },
-{ text:"Mirar nubes en el parque", time:["1h"], money:["0"], energy:["low"] },
-{ text:"Fotos tontas con el móvil", time:["1h"], money:["0"], energy:["low"] },
-{ text:"Ir al parque Valdebernardo", time:["1h"], money:["0"], energy:["low"] },
-{ text:"Ver una peli en casa", time:["1h"], money:["0"], energy:["low"] },
+  // 1°- 0€, 1h, low
+  { text:"Nos quedamos en Vicálvaro", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Mini paseo por el barrio", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Sentados en un banco viendo la calle", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Mirar nubes en el parque", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Fotos tontas con el móvil", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Ir al parque Valdebernardo", time:["1h"], money:["0"], energy:["low"] },
+  { text:"Ver una peli en casa", time:["1h"], money:["0"], energy:["low"] },
 
-// ---
-// 2°- 1-15€, 1h, low
-{ text:"Ir al McDonald's", time:["1h"], money:["1-15"], energy:["low"] },
-{ text:"Comer empanadas venezolanas", time:["1h"], money:["1-15"], energy:["low"] },
-{ text:"Merendar por el barrio", time:["1h"], money:["1-15"], energy:["low"] },
-{ text:"Comer tortitas", time:["1h"], money:["1-15"], energy:["low"] },
-{ text:"Churros con chocolate en el Bernis", time:["1h"], money:["1-15"], energy:["low"] },
-{ text:"Hacer un mini picnic en el parque Valdebernardo", time:["1h"], money:["1-15"], energy:["low"] },
+  // 2°- 1-15€, 1h, low
+  { text:"Ir al McDonald's", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Comer empanadas venezolanas", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Merendar por el barrio", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Comer tortitas", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Churros con chocolate en el Bernis", time:["1h"], money:["1-15"], energy:["low"] },
+  { text:"Hacer un mini picnic en el parque Valdebernardo", time:["1h"], money:["1-15"], energy:["low"] },
 
-// ---
-// 3°- +15€, 1h, low
-{ text:"Cenar en el Vips", time:["1h"], money:["+15"], energy:["low"] },
-{ text:"Comprar un postre gourmet y comerlo", time:["1h"], money:["+15"], energy:["low"] },
-{ text:"Ir a cafetería cara solo a ver", time:["1h"], money:["+15"], energy:["low"] },
-{ text:"Probar un helado premium", time:["1h"], money:["+15"], energy:["low"] },
-{ text:"Mini ruta por un mercado gourmet", time:["1h"], money:["+15"], energy:["low"] },
-{ text:"Ir a un Starbucks", time:["1h"], money:["+15"], energy:["low"] },
-{ text:"Comprar dulces", time:["1h"], money:["+15"], energy:["low"] },
+  // 3°- +15€, 1h, low
+  { text:"Cenar en el Vips", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Comprar un postre gourmet y comerlo", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Ir a cafetería cara solo a ver", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Probar un helado premium", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Mini ruta por un mercado gourmet", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Ir a un Starbucks", time:["1h"], money:["+15"], energy:["low"] },
+  { text:"Comprar dulces", time:["1h"], money:["+15"], energy:["low"] },
 
-// ---
-// 4°- 0€, 2-3h, low
-{ text:"Quedamos en la casa del otro", time:["2-3h"], money:["0"], energy:["low"] },
-{ text:"Paseo corto por el parque Valdebernardo", time:["2-3h"], money:["0"], energy:["low"] },
-{ text:"Ir al Carrefour de Las Rosas", time:["2-3h"], money:["0"], energy:["low"] },
-{ text:"Dar una vuelta por el barrio", time:["2-3h"], money:["0"], energy:["low"] },
-{ text:"Sentarse en un banco a charlar", time:["2-3h"], money:["0"], energy:["low"] },
-{ text:"Visita gratuita a exposiciones", time:["2-3h"], money:["0"], energy:["low"] },
+  // 4°- 0€, 2-3h, low
+  { text:"Quedamos en la casa del otro", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Paseo corto por el parque Valdebernardo", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Ir al Carrefour de Las Rosas", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Dar una vuelta por el barrio", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Sentarse en un banco a charlar", time:["2-3h"], money:["0"], energy:["low"] },
+  { text:"Visita gratuita a exposiciones", time:["2-3h"], money:["0"], energy:["low"] },
 
+  // 5°- 0€, tarde, low
+  { text:"Paseo largo por el parque Valdebernardo", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Sentarse en banco a ver atardecer", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Fotitos tranquilas por el barrio", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Dar una vuelta por el barrio", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Jugar en las canchas", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Mini picnic improvisado en césped", time:["tarde"], money:["0"], energy:["low"] },
+  { text:"Jugar al fifa", time:["tarde"], money:["0"], energy:["low"] },
 
-// ---
-// 5°- 0€, tarde, low
-{ text:"Paseo largo por el parque Valdebernardo", time:["tarde"], money:["0"], energy:["low"] },
-{ text:"Sentarse en banco a ver atardecer", time:["tarde"], money:["0"], energy:["low"] },
-{ text:"Fotitos tranquilas por el barrio", time:["tarde"], money:["0"], energy:["low"] },
-{ text:"Dar una vuelta por el barrio", time:["tarde"], money:["0"], energy:["low"] },
-{ text:"Jugar en las canchas", time:["tarde"], money:["0"], energy:["low"] },
-{ text:"Mini picnic improvisado en césped", time:["tarde"], money:["0"], energy:["low"] },
-{ text:"Jugar al fifa", time:["tarde"], money:["0"], energy:["low"] },
+  // 6°- 0€, 1h, mid
+  { text:"Fotos por barrio cercano", time:["1h"], money:["0"], energy:["mid"] },
+  { text:"Paseo corto por un parque", time:["1h"], money:["0"], energy:["mid"] },
+  { text:"Ir a dar un paseo por el barrio", time:["1h"], money:["0"], energy:["mid"] },
+  { text:"Mini paseo por un barrio histórico", time:["1h"], money:["0"], energy:["mid"] },
+  { text:"Sentarse a ver el atardecer", time:["1h"], money:["0"], energy:["mid"] },
+  { text:"Pequeña ruta de fotos en calles", time:["1h"], money:["0"], energy:["mid"] },
+  { text:"Ir a un banco y hablar de la vida", time:["1h"], money:["0"], energy:["mid"] },
 
+  // 7°- 1-15€, 1h, mid
+  { text:"Café y churros en San Ginés", time:["1h"], money:["1-15"], energy:["mid"] },
+  { text:"Merendar gofres en Chueca", time:["1h"], money:["1-15"], energy:["mid"] },
+  { text:"Ruta de churros y chocolate por Sol", time:["1h"], money:["1-15"], energy:["mid"] },
+  { text:"Helado en La Mallorquina y paseo por Sol", time:["1h"], money:["1-15"], energy:["mid"] },
+  { text:"Ir al Plenilunio", time:["1h"], money:["1-15"], energy:["mid"] },
+  { text:"Chocolate con churros", time:["1h"], money:["1-15"], energy:["mid"] },
+  { text:"Comprar un dulce y sentarse a comer", time:["1h"], money:["1-15"], energy:["mid"] },
 
-// ---
-// 6°- 0€, 1h, mid
-{ text:"Fotos por barrio cercano", time:["1h"], money:["0"], energy:["mid"] },
-{ text:"Paseo corto por un parque", time:["1h"], money:["0"], energy:["mid"] },
-{ text:"Ir a dar un paseo por el barrio", time:["1h"], money:["0"], energy:["mid"] },
-{ text:"Mini paseo por un barrio histórico", time:["1h"], money:["0"], energy:["mid"] },
-{ text:"Sentarse a ver el atardecer", time:["1h"], money:["0"], energy:["mid"] },
-{ text:"Pequeña ruta de fotos en calles", time:["1h"], money:["0"], energy:["mid"] },
-{ text:"Ir a un banco y hablar de la vida", time:["1h"], money:["0"], energy:["mid"] },
+  // 8°- +15€, 1h, mid
+  { text:"Cenar en un italiano", time:["1h"], money:["+15"], energy:["mid"] },
+  { text:"Café o postre caro", time:["1h"], money:["+15"], energy:["mid"] },
+  { text:"Mini ruta por mercado gourmet", time:["1h"], money:["+15"], energy:["mid"] },
+  { text:"Probar un helado premium", time:["1h"], money:["+15"], energy:["mid"] },
+  { text:"Ir a tienda de chocolates y mirar", time:["1h"], money:["+15"], energy:["mid"] },
+  { text:"Postre en Starbucks", time:["1h"], money:["+15"], energy:["mid"] },
+  { text:"Mini paseo por zona cara y mirar escaparates", time:["1h"], money:["+15"], energy:["mid"] },
+  { text:"Ir a la cachapería", time:["1h"], money:["+15"], energy:["mid"] },
 
-// ---
-// 7°- 1-15€, 1h, mid
-{ text:"Café y churros en San Ginés", time:["1h"], money:["1-15"], energy:["mid"] },
-{ text:"Merendar gofres en Chueca", time:["1h"], money:["1-15"], energy:["mid"] },
-{ text:"Ruta de churros y chocolate por Sol", time:["1h"], money:["1-15"], energy:["mid"] },
-{ text:"Helado en La Mallorquina y paseo por Sol", time:["1h"], money:["1-15"], energy:["mid"] },
-{ text:"Ir al Plenilunio", time:["1h"], money:["1-15"], energy:["mid"] },
-{ text:"Chocolate con churros", time:["1h"], money:["1-15"], energy:["mid"] },
-{ text:"Comprar un dulce y sentarse a comer", time:["1h"], money:["1-15"], energy:["mid"] },
+  // 9°- 0€, 2-3h, mid
+  { text:"Paseo por La Latina + fotos", time:["2-3h"], money:["0"], energy:["mid"] },
+  { text:"Visitar CaixaForum + fotos", time:["2-3h"], money:["0"], energy:["mid"] },
+  { text:"Picnic en Parque del Oeste", time:["2-3h"], money:["0"], energy:["mid"] },
+  { text:"Fotos por Chamberí", time:["2-3h"], money:["0"], energy:["mid"] },
+  { text:"Paseo por Madrid Río al atardecer", time:["2-3h"], money:["0"], energy:["mid"] },
+  { text:"Visitar exposiciones gratis", time:["2-3h"], money:["0"], energy:["mid"] },
+  { text:"Ir a algún sitio que no conozcamos caminando", time:["2-3h"], money:["0"], energy:["mid"] },
 
-// ---
-// 8°- +15€, 1h, mid
-{ text:"Cenar en un italiano", time:["1h"], money:["+15"], energy:["mid"] },
-{ text:"Café o postre caro", time:["1h"], money:["+15"], energy:["mid"] },
-{ text:"Mini ruta por mercado gourmet", time:["1h"], money:["+15"], energy:["mid"] },
-{ text:"Probar un helado premium", time:["1h"], money:["+15"], energy:["mid"] },
-{ text:"Ir a tienda de chocolates y mirar", time:["1h"], money:["+15"], energy:["mid"] },
-{ text:"Postre en Starbucks", time:["1h"], money:["+15"], energy:["mid"] },
-{ text:"Mini paseo por zona cara y mirar escaparates", time:["1h"], money:["+15"], energy:["mid"] },
-{ text:"Ir a la cachapería", time:["1h"], money:["+15"], energy:["mid"] },
+  // 10°- 0€, tarde, mid
+  { text:"Paseo por el Parque del Retiro + fotos", time:["tarde"], money:["0"], energy:["mid"] },
+  { text:"Ir a un mercado vintage en Lavapiés", time:["tarde"], money:["0"], energy:["mid"] },
+  { text:"Mini paseo por barrios tranquilos", time:["tarde"], money:["0"], energy:["mid"] },
+  { text:"Fotitos en calles con encanto", time:["tarde"], money:["0"], energy:["mid"] },
+  { text:"Sentarse en plaza y charlar", time:["tarde"], money:["0"], energy:["mid"] },
+  { text:"Cocinar juntos", time:["tarde"], money:["0"], energy:["mid"] },
+  { text:"Pasar la tarde juntos en un banco", time:["tarde"], money:["0"], energy:["mid"] },
 
-// ---
-// 9°- 0€, 2-3h, mid
-{ text:"Paseo por La Latina + fotos", time:["2-3h"], money:["0"], energy:["mid"] },
-{ text:"Visitar CaixaForum + fotos", time:["2-3h"], money:["0"], energy:["mid"] },
-{ text:"Picnic en Parque del Oeste", time:["2-3h"], money:["0"], energy:["mid"] },
-{ text:"Fotos por Chamberí", time:["2-3h"], money:["0"], energy:["mid"] },
-{ text:"Paseo por Madrid Río al atardecer", time:["2-3h"], money:["0"], energy:["mid"] },
-{ text:"Visitar exposiciones gratis", time:["2-3h"], money:["0"], energy:["mid"] },
-{ text:"Ir a algún sitio que no conozcamos caminando", time:["2-3h"], money:["0"], energy:["mid"] },
+  // 11°- 0€, 1h, high
+  { text:"Paseo por barrio bonito", time:["1h"], money:["0"], energy:["high"] },
+  { text:"Fotos en plazas concurridas", time:["1h"], money:["0"], energy:["high"] },
+  { text:"Subir escaleras y ver vistas", time:["1h"], money:["0"], energy:["high"] },
+  { text:"Mini carrera en parque cercano", time:["1h"], money:["0"], energy:["high"] },
+  { text:"Explorar callecitas nuevas", time:["1h"], money:["0"], energy:["high"] },
+  { text:"Pequeño reto de fotos creativas", time:["1h"], money:["0"], energy:["high"] },
+  { text:"Charlar mientras caminamos", time:["1h"], money:["0"], energy:["high"] },
 
-// ---
-// 10°- 0€, tarde, mid
-{ text:"Paseo por el Parque del Retiro + fotos", time:["tarde"], money:["0"], energy:["mid"] },
-{ text:"Ir a un mercado vintage en Lavapiés", time:["tarde"], money:["0"], energy:["mid"] },
-{ text:"Mini paseo por barrios tranquilos", time:["tarde"], money:["0"], energy:["mid"] },
-{ text:"Fotitos en calles con encanto", time:["tarde"], money:["0"], energy:["mid"] },
-{ text:"Sentarse en plaza y charlar", time:["tarde"], money:["0"], energy:["mid"] },
-{ text:"Cocinar juntos", time:["tarde"], money:["0"], energy:["mid"] },
-{ text:"Pasar la tarde juntos en un banco", time:["tarde"], money:["0"], energy:["mid"] },
+  // 12°- 1-15€, 1h, high
+  { text:"Starbucks", time:["1h"], money:["1-15"], energy:["high"] },
+  { text:"Merendar gofre y competir a ver quién lo termina antes", time:["1h"], money:["1-15"], energy:["high"] },
+  { text:"Merendar por el barrio", time:["1h"], money:["1-15"], energy:["high"] },
+  { text:"Pequeño tour de postres por barrio", time:["1h"], money:["1-15"], energy:["high"] },
+  { text:"Heladería", time:["1h"], money:["1-15"], energy:["high"] },
 
-// ---
-// 11°- 0€, 1h, high
-{ text:"Paseo por barrio bonito", time:["1h"], money:["0"], energy:["high"] },
-{ text:"Fotos en plazas concurridas", time:["1h"], money:["0"], energy:["high"] },
-{ text:"Subir escaleras y ver vistas", time:["1h"], money:["0"], energy:["high"] },
-{ text:"Mini carrera en parque cercano", time:["1h"], money:["0"], energy:["high"] },
-{ text:"Explorar callecitas nuevas", time:["1h"], money:["0"], energy:["high"] },
-{ text:"Pequeño reto de fotos creativas", time:["1h"], money:["0"], energy:["high"] },
-{ text:"Charlar mientras caminamos", time:["1h"], money:["0"], energy:["high"] },
+  // 13°- +15€, 1h, high
+  { text:"Cenar en un italiano", time:["1h"], money:["+15"], energy:["high"] },
+  { text:"Postre premium", time:["1h"], money:["+15"], energy:["high"] },
+  { text:"Cafetería elegante con mini paseo", time:["1h"], money:["+15"], energy:["high"] },
+  { text:"Heladería buena", time:["1h"], money:["+15"], energy:["high"] },
 
-// ---
-// 12°- 1-15€, 1h, high
-{ text:"Starbucks", time:["1h"], money:["1-15"], energy:["high"] },
-{ text:"Merendar gofre y competir a ver quién lo termina antes", time:["1h"], money:["1-15"], energy:["high"] },
-{ text:"Merendar por el barrio", time:["1h"], money:["1-15"], energy:["high"] },
-{ text:"Pequeño tour de postres por barrio", time:["1h"], money:["1-15"], energy:["high"] },
-{ text:"Heladería", time:["1h"], money:["1-15"], energy:["high"] },
+  // 14°- 0€, 2-3h, high
+  { text:"Ir a Casa de Campo", time:["2-3h"], money:["0"], energy:["high"] },
+  { text:"Ir a la piscina", time:["2-3h"], money:["0"], energy:["high"] },
+  { text:"Paseo por un parque grande", time:["2-3h"], money:["0"], energy:["high"] },
+  { text:"Mini ruta de fotos", time:["2-3h"], money:["0"], energy:["high"] },
+  { text:"Explorar barrios nuevos", time:["2-3h"], money:["0"], energy:["high"] },
+  { text:"Jugar al fútbol", time:["2-3h"], money:["0"], energy:["high"] },
+  { text:"Subir a una azotea", time:["2-3h"], money:["0"], energy:["high"] },
 
-// ---
-// 13°- +15€, 1h, high
-{ text:"Cenar en un italiano", time:["1h"], money:["+15"], energy:["high"] },
-{ text:"Postre premium", time:["1h"], money:["+15"], energy:["high"] },
-{ text:"Cafetería elegante con mini paseo", time:["1h"], money:["+15"], energy:["high"] },
-{ text:"Heladería buena", time:["1h"], money:["+15"], energy:["high"] },
+  // 15°- 0€, tarde, high
+  { text:"Paseo por el Parque del Retiro + fotos", time:["tarde"], money:["0"], energy:["high"] },
+  { text:"Ir a un mirador y fotos nocturnas", time:["tarde"], money:["0"], energy:["high"] },
+  { text:"Fotitos por calles animadas", time:["tarde"], money:["0"], energy:["high"] },
+  { text:"Explorar plazas iluminadas", time:["tarde"], money:["0"], energy:["high"] },
+  { text:"Dar una vuelta por el centro", time:["tarde"], money:["0"], energy:["high"] },
+  { text:"Ver tiendas chulis", time:["tarde"], money:["0"], energy:["high"] },
+  { text:"Fotos en sitios bonitos", time:["tarde"], money:["0"], energy:["high"] },
 
-// ---
-// 14°- 0€, 2-3h, high
-{ text:"Ir a Casa de Campo", time:["2-3h"], money:["0"], energy:["high"] },
-{ text:"Ir a la piscina", time:["2-3h"], money:["0"], energy:["high"] },
-{ text:"Paseo por un parque grande", time:["2-3h"], money:["0"], energy:["high"] },
-{ text:"Mini ruta de fotos", time:["2-3h"], money:["0"], energy:["high"] },
-{ text:"Explorar barrios nuevos", time:["2-3h"], money:["0"], energy:["high"] },
-{ text:"Jugar al fútbol", time:["2-3h"], money:["0"], energy:["high"] },
-{ text:"Subir a una azotea", time:["2-3h"], money:["0"], energy:["high"] },
+  // 1-15€ 2-3h LOW 
+  { text:"Cine tranquilo y charlar después", time:["2-3h"], money:["1-15"], energy:["low"] },
+  { text:"Merendar en una cafetería", time:["2-3h"], money:["1-15"], energy:["low"] },
+  { text:"Cenar en 100 Montaditos", time:["2-3h"], money:["1-15"], energy:["low"] },
+  { text:"Picnic sencillo + actividad tranquila", time:["2-3h"], money:["1-15"], energy:["low"] },
+  { text:"H2O", time:["2-3h"], money:["1-15"], energy:["low"] },
+  { text:"Quedar en casa y pedir algo para cenar", time:["2-3h"], money:["1-15"], energy:["low"] },
+  { text:"Centro comercial sin comprar casi nada", time:["2-3h"], money:["1-15"], energy:["low"] },
 
-// ---
-// 15°- 0€, tarde, high
-{ text:"Paseo por el Parque del Retiro + fotos", time:["tarde"], money:["0"], energy:["high"] },
-{ text:"Ir a un mirador y fotos nocturnas", time:["tarde"], money:["0"], energy:["high"] },
-{ text:"Fotitos por calles animadas", time:["tarde"], money:["0"], energy:["high"] },
-{ text:"Explorar plazas iluminadas", time:["tarde"], money:["0"], energy:["high"] },
-{ text:"Dar una vuelta por el centro", time:["tarde"], money:["0"], energy:["high"] },
-{ text:"Ver tiendas chulis", time:["tarde"], money:["0"], energy:["high"] },
-{ text:"Fotos en sitios bonitos", time:["tarde"], money:["0"], energy:["high"] },
-//1-15€ 2-3h LOW 
-{ text:"Cine tranquilo y charlar después", time:["2-3h"], money:["1-15"], energy:["low"] },
-{ text:"Merendar en una cafetería", time:["2-3h"], money:["1-15"], energy:["low"] },
-{ text:"Cenar en 100 Montaditos", time:["2-3h"], money:["1-15"], energy:["low"] },
-{ text:"Picnic sencillo + actividad tranquila", time:["2-3h"], money:["1-15"], energy:["low"] },
-{ text:"H2O", time:["2-3h"], money:["1-15"], energy:["low"] },
-{ text:"Quedar en casa y pedir algo para cenar", time:["2-3h"], money:["1-15"], energy:["low"] },
-{ text:"Centro comercial sin comprar casi nada", time:["2-3h"], money:["1-15"], energy:["low"] },
+  // 1-15€ TARDE LOW
+  { text:"Tarde de sofá y peli", time:["tarde"], money:["1-15"], energy:["low"] },
+  { text:"Ver el atardecer sentados con algo dulce", time:["tarde"], money:["1-15"], energy:["low"] },
+  { text:"Cenar temprano y volver pronto", time:["tarde"], money:["1-15"], energy:["low"] },
+  { text:"Helado + paseo corto", time:["tarde"], money:["1-15"], energy:["low"] },
+  { text:"Cafetería", time:["tarde"], money:["1-15"], energy:["low"] },
+  { text:"Pedidos de comida", time:["tarde"], money:["1-15"], energy:["low"] },
+  { text:"Tarde tranquila en casa del otro", time:["tarde"], money:["1-15"], energy:["low"] },
 
-//1-15€ TARDE LOW
-{ text:"Tarde de sofá y peli", time:["tarde"], money:["1-15"], energy:["low"] },
-{ text:"Ver el atardecer sentados con algo dulce", time:["tarde"], money:["1-15"], energy:["low"] },
-{ text:"Cenar temprano y volver pronto", time:["tarde"], money:["1-15"], energy:["low"] },
-{ text:"Helado + paseo corto", time:["tarde"], money:["1-15"], energy:["low"] },
-{ text:"Cafetería", time:["tarde"], money:["1-15"], energy:["low"] },
-{ text:"Pedidos de comida", time:["tarde"], money:["1-15"], energy:["low"] },
-{ text:"Tarde tranquila en casa del otro", time:["tarde"], money:["1-15"], energy:["low"] },
+  // +15€ 2-3h LOW 
+  { text:"Cine premium sin movernos mucho", time:["2-3h"], money:["+15"], energy:["low"] },
+  { text:"Cenar en un italiano", time:["2-3h"], money:["+15"], energy:["low"] },
+  { text:"Vips", time:["2-3h"], money:["+15"], energy:["low"] },
+  { text:"Restaurante tranquilo", time:["2-3h"], money:["+15"], energy:["low"] },
+  { text:"Sitio de arcade", time:["2-3h"], money:["+15"], energy:["low"] },
+  { text:"Mallorquina", time:["2-3h"], money:["+15"], energy:["low"] },
+  { text:"Cenar algo especial sin prisa", time:["2-3h"], money:["+15"], energy:["low"] },
 
-//+15€ 2-3h LOW 
-{ text:"Cine premium sin movernos mucho", time:["2-3h"], money:["+15"], energy:["low"] },
-{ text:"Cenar en un italiano", time:["2-3h"], money:["+15"], energy:["low"] },
-{ text:"Vips", time:["2-3h"], money:["+15"], energy:["low"] },
-{ text:"Restaurante tranquilo", time:["2-3h"], money:["+15"], energy:["low"] },
-{ text:"Sitio de arcade", time:["2-3h"], money:["+15"], energy:["low"] },
-{ text:"Mallorquina", time:["2-3h"], money:["+15"], energy:["low"] },
-{ text:"Cenar algo especial sin prisa", time:["2-3h"], money:["+15"], energy:["low"] },
+  // +15€ TARDE LOW 
+  { text:"Cena bonita y vuelta pronto", time:["tarde"], money:["+15"], energy:["low"] },
+  { text:"Cine + volver abrazados", time:["tarde"], money:["+15"], energy:["low"] },
+  { text:"Merienda cara solo por gusto", time:["tarde"], money:["+15"], energy:["low"] },
+  { text:"Restaurante tranquilo al atardecer", time:["tarde"], money:["+15"], energy:["low"] },
+  { text:"Starbucks y charla", time:["tarde"], money:["+15"], energy:["low"] },
+  { text:"Postre fancy y paseo corto", time:["tarde"], money:["+15"], energy:["low"] },
+  { text:"Cena venezolana sin movernos mucho", time:["tarde"], money:["+15"], energy:["low"] },
 
-// +15€ TARDE LOW 
-{ text:"Cena bonita y vuelta pronto", time:["tarde"], money:["+15"], energy:["low"] },
-{ text:"Cine + volver abrazados", time:["tarde"], money:["+15"], energy:["low"] },
-{ text:"Merienda cara solo por gusto", time:["tarde"], money:["+15"], energy:["low"] },
-{ text:"Restaurante tranquilo al atardecer", time:["tarde"], money:["+15"], energy:["low"] },
-{ text:"Starbucks y charla", time:["tarde"], money:["+15"], energy:["low"] },
-{ text:"Postre fancy y paseo corto", time:["tarde"], money:["+15"], energy:["low"] },
-{ text:"Cena venezolana sin movernos mucho", time:["tarde"], money:["+15"], energy:["low"] },
+  // 1-15€ 2-3h MID
+  { text:"Paseo largo + fotos", time:["2-3h"], money:["1-15"], energy:["mid"] },
+  { text:"Helados", time:["2-3h"], money:["1-15"], energy:["mid"] },
+  { text:"Centro comercial", time:["2-3h"], money:["1-15"], energy:["mid"] },
+  { text:"Picnic en parque grande", time:["2-3h"], money:["1-15"], energy:["mid"] },
+  { text:"Mercadillo + merienda", time:["2-3h"], money:["1-15"], energy:["mid"] },
+  { text:"Pasear por barrios y fotos", time:["2-3h"], money:["1-15"], energy:["mid"] },
+  { text:"Madrid Río completo", time:["2-3h"], money:["1-15"], energy:["mid"] },
 
-//1-15€ 2-3h MID
-{ text:"Paseo largo + fotos", time:["2-3h"], money:["1-15"], energy:["mid"] },
-{ text:"Helados", time:["2-3h"], money:["1-15"], energy:["mid"] },
-{ text:"Centro comercial", time:["2-3h"], money:["1-15"], energy:["mid"] },
-{ text:"Picnic en parque grande", time:["2-3h"], money:["1-15"], energy:["mid"] },
-{ text:"Mercadillo + merienda", time:["2-3h"], money:["1-15"], energy:["mid"] },
-{ text:"Pasear por barrios y fotos", time:["2-3h"], money:["1-15"], energy:["mid"] },
-{ text:"Madrid Río completo", time:["2-3h"], money:["1-15"], energy:["mid"] },
-
-// 1-15€ TARDE MID 
+// 1-15€ TARDE MID
 { text:"Atardecer + fotos bonitas", time:["tarde"], money:["1-15"], energy:["mid"] },
 { text:"Paseo largo al atardecer", time:["tarde"], money:["1-15"], energy:["mid"] },
 { text:"Mirador y hablar de la vida", time:["tarde"], money:["1-15"], energy:["mid"] },
@@ -317,7 +302,7 @@ const plans = [
 { text:"Fotos nocturnas", time:["tarde"], money:["1-15"], energy:["mid"] },
 { text:"Helado + paseo", time:["tarde"], money:["1-15"], energy:["mid"] },
 
-//+15€ 2-3h MID
+// +15€ 2-3h MID
 { text:"Bolera", time:["2-3h"], money:["+15"], energy:["mid"] },
 { text:"Cine + paseo", time:["2-3h"], money:["+15"], energy:["mid"] },
 { text:"Cena especial + fotos", time:["2-3h"], money:["+15"], energy:["mid"] },
@@ -326,7 +311,7 @@ const plans = [
 { text:"Centro comercial", time:["2-3h"], money:["+15"], energy:["mid"] },
 { text:"Restaurante bonito", time:["2-3h"], money:["+15"], energy:["mid"] },
 
-//+15€ TARDE MID
+// +15€ TARDE MID
 { text:"Cena + paseo por donde estemos", time:["tarde"], money:["+15"], energy:["mid"] },
 { text:"Azotea al atardecer", time:["tarde"], money:["+15"], energy:["mid"] },
 { text:"Cine nocturno", time:["tarde"], money:["+15"], energy:["mid"] },
@@ -335,7 +320,7 @@ const plans = [
 { text:"Plan sorpresa sin mirar hora", time:["tarde"], money:["+15"], energy:["mid"] },
 { text:"Postre especial + paseo", time:["tarde"], money:["+15"], energy:["mid"] },
 
-//1-15€ 2-3h HIGH
+// 1-15€ 2-3h HIGH
 { text:"Caminar sin parar por Madrid", time:["2-3h"], money:["1-15"], energy:["high"] },
 { text:"Ruta de fotos", time:["2-3h"], money:["1-15"], energy:["high"] },
 { text:"Casa de Campo", time:["2-3h"], money:["1-15"], energy:["high"] },
@@ -344,7 +329,7 @@ const plans = [
 { text:"Fotos + caminar sin parar", time:["2-3h"], money:["1-15"], energy:["high"] },
 { text:"Ruta improvisada", time:["2-3h"], money:["1-15"], energy:["high"] },
 
-//1-15€ TARDE HIGH
+// 1-15€ TARDE HIGH
 { text:"Atardecer + caminar", time:["tarde"], money:["1-15"], energy:["high"] },
 { text:"Perdernos por el centro", time:["tarde"], money:["1-15"], energy:["high"] },
 { text:"Fotos hasta que oscurezca", time:["tarde"], money:["1-15"], energy:["high"] },
@@ -353,7 +338,7 @@ const plans = [
 { text:"Madrid Río al atardecer", time:["tarde"], money:["1-15"], energy:["high"] },
 { text:"Ruta de fotos", time:["tarde"], money:["1-15"], energy:["high"] },
 
-//+15€ 2-3h HIGH 
+// +15€ 2-3h HIGH
 { text:"Karts", time:["2-3h"], money:["+15"], energy:["high"] },
 { text:"Escape room intenso", time:["2-3h"], money:["+15"], energy:["high"] },
 { text:"Ir al Oasiz", time:["2-3h"], money:["+15"], energy:["high"] },
@@ -362,20 +347,18 @@ const plans = [
 { text:"Centro comercial", time:["2-3h"], money:["+15"], energy:["high"] },
 { text:"Plan sorpresa", time:["2-3h"], money:["+15"], energy:["high"] },
 
-//+15€ TARDE HIGH
+// +15€ TARDE HIGH
 { text:"Plan al atardecer", time:["tarde"], money:["+15"], energy:["high"] },
 { text:"Salir y cenar en un sitio chuli", time:["tarde"], money:["+15"], energy:["high"] },
 { text:"Cena + caminar", time:["tarde"], money:["+15"], energy:["high"] },
 { text:"Fotos nocturnas por todo Madrid", time:["tarde"], money:["+15"], energy:["high"] },
 { text:"Plan improvisado", time:["tarde"], money:["+15"], energy:["high"] },
 { text:"Explorar hasta cansarnos", time:["tarde"], money:["+15"], energy:["high"] },
-{ text:"tarde completa fuera", time:["tarde"], money:["+15"], energy:["high"] }
+{ text:"Tarde completa fuera", time:["tarde"], money:["+15"], energy:["high"] },
 { text:"Spa juntos", time:["tarde"], money:["0"], energy:["low"] },
-
 ];
 
-
-// VARIABLES
+// FILTROS Y FUNCIONES
 let filtered = [];
 let index = 0;
 const card = document.getElementById("card");
@@ -384,16 +367,29 @@ const time = document.getElementById("time");
 const money = document.getElementById("money");
 const energy = document.getElementById("energy");
 
-// FILTRAR PLANES
-function loadPlans(){
-  filtered = plans.filter(p => p.time.includes(time.value) && p.money.includes(money.value) && p.energy.includes(energy.value));
+// CARGAR PLANES INICIAL Y MOSTRAR PRIMER PLAN AUTOMÁTICAMENTE
+window.onload = () => {
+  loadPlans();  
+  showPlan();
+};
+
+// FILTROS DINÁMICOS
+time.addEventListener("change", loadPlans);
+money.addEventListener("change", loadPlans);
+energy.addEventListener("change", loadPlans);
+
+function loadPlans() {
+  filtered = plans.filter(p =>
+    p.time.includes(time.value) &&
+    p.money.includes(money.value) &&
+    p.energy.includes(energy.value)
+  );
   index = 0;
   showPlan();
 }
 
-// MOSTRAR PLAN
-function showPlan(){
-  if(!filtered.length){
+function showPlan() {
+  if (!filtered.length) {
     card.textContent = "No hay plan, calma";
     return;
   }
@@ -402,60 +398,58 @@ function showPlan(){
 }
 
 // SWIPE IZQUIERDA
-document.getElementById("nope").onclick = function(){
-  if(!filtered.length) return;
+const swipeMsgs = [
+  "Ya vamos, siguiente plan",
+  "No te rayes, pasamos al próximo ",
+  "Esto decide por nosotros",
+  "Calma, hay más planes"
+];
+function nextPlan() {
+  if (!filtered.length) return;
   card.classList.add("swipe-left");
-  index = (index+1)%filtered.length;
-  setTimeout(showPlan, 250);
-  msg.textContent = "Siguiente plan…";
-};
+  msg.textContent = swipeMsgs[Math.floor(Math.random()*swipeMsgs.length)];
+  setTimeout(() => { index = (index+1)%filtered.length; showPlan(); }, 250);
+}
 
-// LIKE 🖤
-document.getElementById("like").onclick = function(){
-  if(!filtered.length){
+// PLAN SELECCIONADO
+function likePlan() {
+  if (!filtered.length) {
     msg.textContent = "No hay planes, cambia los filtros.";
     return;
   }
-  card.classList.add("swipe-right");
-  launchConfetti();
   msg.textContent = "Ya estamos tardando en ir";
-  index = (index+1)%filtered.length;
-  setTimeout(showPlan, 250);
-};
+  launchConfetti();
+}
 
-// CAMBIO DE FILTROS
-time.addEventListener("change", loadPlans);
-money.addEventListener("change", loadPlans);
-energy.addEventListener("change", loadPlans);
-window.onload = loadPlans;
-
-// CONFETTI QUE BAJA SIEMPRE
-function launchConfetti(){
+// CONFETTI INFINITO
+function launchConfetti(duration = 5000) {
   const canvas = document.getElementById("confetti");
   const ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
   const confettis = [];
-  for(let i=0;i<150;i++){
+  for (let i=0; i<200; i++) {
     confettis.push({
       x: Math.random()*canvas.width,
       y: Math.random()*canvas.height,
       r: Math.random()*6+4,
       d: Math.random()*100+10,
-      color:`hsl(${Math.random()*360},100%,50%)`,
+      color: `hsl(${Math.random()*360},100%,50%)`,
       tilt: Math.random()*10-10
     });
   }
 
-  function animate(){
+  function animate() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     confettis.forEach(c=>{
-      ctx.fillStyle = c.color;
-      ctx.fillRect(c.x+c.tilt,c.y,c.r,c.r);
-      c.y += 3;
+      ctx.beginPath();
+      ctx.fillStyle=c.color;
+      ctx.fillRect(c.x + c.tilt, c.y, c.r, c.r);
+      ctx.closePath();
+      c.y += 2;
       c.tilt += 0.5;
-      if(c.y>canvas.height) c.y=-10;
+      if(c.y>canvas.height) c.y = -10;
     });
     requestAnimationFrame(animate);
   }
