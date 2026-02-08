@@ -120,7 +120,7 @@ button:active { transform: scale(.96); }
 <canvas id="confetti"></canvas>
 
 <script>
-  window.addEventListener('load', function() {
+window.addEventListener('load', function() {
     const password = "SandraEsLaMejor";
     let userInput = prompt("Introduce la contraseña para acceder a los planes:");
 
@@ -364,13 +364,20 @@ const plans = [
 { text:"Tarde completa fuera", time:["tarde"], money:["+15"], energy:["high"] },
 { text:"Spa juntos", time:["tarde"], money:["0"], energy:["low"] },
 ];
-  console.log("Acceso permitido. Los planes están listos:");
-        console.log(plans);
+  const container = document.createElement('div');
+        container.id = "plans-container";
+        container.style.whiteSpace = "pre-wrap"; // para que se vean saltos de línea
+        document.body.appendChild(container);
 
-        // Aquí puedes poner tu confeti y todo lo demás
+        // Mostrar todos los planes
+        plans.forEach(plan => {
+            container.innerHTML += `• ${plan.text} | Tiempo: ${plan.time} | Dinero: ${plan.money} | Energía: ${plan.energy}\n`;
+        });
+
+        // Aquí seguiría el confeti o lo que quieras
     } else {
         alert("Contraseña incorrecta. No puedes ver los planes 🐀");
-      }
+    }
 });
 
 // FILTROS Y FUNCIONES
